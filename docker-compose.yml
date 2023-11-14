@@ -1,0 +1,50 @@
+version: '3.9'
+
+services:
+  picsur:
+    image: ghcr.io/caramelfur/picsur:latest
+    container_name: picsur
+    ports:
+      - 8080:8080 # change the left side of this mapping if 8080 is in use on the host system already
+    environment:
+      PICSUR_HOST: '0.0.0.0'
+      PICSUR_PORT: 8080
+
+      PICSUR_DB_HOST: picsur_postgres
+      PICSUR_DB_PORT: 5432
+      PICSUR_DB_USERNAME: picsur
+      PICSUR_DB_PASSWORD: nice-long-strong-passw0rd-here  # must match the POSTGRES_PASSWORD in the picsur_postgres: section
+      PICSUR_DB_DATABASE: picsur
+
+      ## The default username is admin, this is not modifyable
+      PICSUR_ADMIN_PASSWORD: different-nice-long-str0n6-passw0rd-here
+
+      ## Optional, random secret will be generated if not set
+      # PICSUR_JWT_SECRET: CHANGE_ME
+      # PICSUR_JWT_EXPIRY: 7d
+      
+      ## Maximum accepted size for uploads in bytes
+      PICSUR_MAX_FILE_SIZE: 128000000  # 128 MB
+      ## No need to touch this, unless you use a custom frontend
+      # PICSUR_STATIC_FRONTEND_ROOT: "/picsur/frontend/dist"
+
+      ## Warning: Verbose mode might log sensitive data
+      # PICSUR_VERBOSE: "true"
+    restart: unless-stopped
+    
+  picsur_postgres:
+    image: postgres:14-alpine
+    container_name: picsur_postgres
+    environment:
+      POSTGRES_DB: picsur
+      POSTGRES_PASSWORD: nice-long-strong-passw0rd-here
+      POSTGRES_USER: picsur
+    ports:
+      - 5432:5432
+    restart: unless-stopped
+    volumes:
+      # you can change the left side of the mapping below if you have images stored in a separate location
+      - ./picsur-data:/var/lib/postgresql/data  # this will place all images in the same folder as docker compose
+
+volumes:
+  picsur-data:  # if you change the volume mapping, make sure to change this to match
